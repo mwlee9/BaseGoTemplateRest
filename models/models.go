@@ -17,15 +17,16 @@ func InitDatabase() *sql.DB {
 }
 
 // CreateTable ...
-func CreateTable(db *sql.DB) {
+func CreateTable() {
 
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS Animals (id TEXT, name TEXT, species TEXT);")
+	db := InitDatabase()
 
-	checkErr(err)
+	// _, err := db.Exec("CREATE TABLE IF NOT EXISTS animals (id SERIAL PRIMARY KEY, name TEXT, species TEXT);")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS animals (id SERIAL PRIMARY KEY, name TEXT, species TEXT);")
 
-	err1 := db.Close()
-
-	checkErr(err1)
+	if err != nil {
+		fmt.Println("ERROR")
+	}
 
 	defer db.Close()
 
@@ -35,9 +36,11 @@ func CreateTable(db *sql.DB) {
 func GetAllTasks() *sql.Rows {
 	db := InitDatabase()
 
-	rows, err := db.Query("SELECT * FROM animals;")
+	rows, err := db.Query("SELECT * FROM animals")
 
-	checkErr(err)
+	if err != nil {
+		fmt.Println("ERROR1")
+	}
 
 	defer db.Close()
 
@@ -69,6 +72,23 @@ func DeleteOneTask(params string) {
 
 	fmt.Println(res)
 	defer db.Close()
+}
+
+// NewTask ...
+func NewTask(name string, species string) {
+
+	db := InitDatabase()
+
+	stmt, err := db.Prepare("INSERT INTO ANIMALS (name, species) values ($1,$2)")
+	checkErr(err)
+
+	res, err := stmt.Exec(name, species)
+
+	checkErr(err)
+	fmt.Println(res)
+
+	defer db.Close()
+
 }
 
 func checkErr(err error) {

@@ -13,7 +13,7 @@ import (
 // Types - Remember, names must be capital to be exported for the json package to use.
 
 type animal struct {
-	ID      string
+	ID      int
 	Name    string
 	Species string
 }
@@ -25,16 +25,23 @@ func Home(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	rows := models.GetAllTasks()
 
-	tempAnimal := animal{ID: "", Name: "", Species: ""}
+	tempAnimal := animal{ID: 0, Name: "", Species: ""}
 
 	for rows.Next() {
-		rows.Scan(&tempAnimal.ID, &tempAnimal.Name, &tempAnimal.Species)
+		err2 := rows.Scan(&tempAnimal.ID, &tempAnimal.Name, &tempAnimal.Species)
 		fmt.Println(tempAnimal.ID, tempAnimal.Name, tempAnimal.Species)
+		if err2 != nil {
+			fmt.Println("ERROR2")
+			fmt.Println(err2)
+		}
 
 	}
 
-	t, err := template.ParseFiles("views/home.html")
-	checkErr(err)
+	t, err3 := template.ParseFiles("views/home.html")
+
+	if err3 != nil {
+		fmt.Println("ERROR3")
+	}
 
 	t.Execute(w, "Home")
 
@@ -45,12 +52,17 @@ func GetOneTask(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	params := ps.ByName("id")
 
-	tempAnimal := animal{ID: "", Name: "", Species: ""}
-
 	rows := models.GetOneTask(params)
+
+	tempAnimal1 := animal{ID: 0, Name: "", Species: ""}
+
 	for rows.Next() {
-		rows.Scan(&tempAnimal.ID, &tempAnimal.Name, &tempAnimal.Species)
-		fmt.Println(tempAnimal.ID, tempAnimal.Name, tempAnimal.Species)
+		err2 := rows.Scan(&tempAnimal1.ID, &tempAnimal1.Name, &tempAnimal1.Species)
+		fmt.Println(tempAnimal1.ID, tempAnimal1.Name, tempAnimal1.Species)
+		if err2 != nil {
+			fmt.Println("ERROR2")
+			fmt.Println(err2)
+		}
 
 	}
 
@@ -65,6 +77,12 @@ func DeleteOneTask(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 // NewTask ...
 func NewTask(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	r.ParseForm()
+	name := r.FormValue("name")
+	species := r.FormValue("species")
+
+	models.NewTask(name, species)
 
 }
 
